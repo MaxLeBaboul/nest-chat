@@ -36,7 +36,7 @@ export class AuthService {
       },
     });
 
-    return await this.authenticateUser({ userId: createdUser.id });
+    return await this.getAuthenticateUser({ userId: createdUser.id });
   }
 
   async login(authUserDto: LoginDto) {
@@ -61,7 +61,7 @@ export class AuthService {
       throw new Error('Invalid password');
       return;
     }
-    return await this.authenticateUser({ userId: existingUser.id });
+    return await this.getAuthenticateUser({ userId: existingUser.id });
   }
 
   private async hashPassword(password: string) {
@@ -74,7 +74,7 @@ export class AuthService {
     return isPasswordValid;
   }
 
-  private async authenticateUser({ userId }: AuthPayload) {
+  private async getAuthenticateUser({ userId }: AuthPayload) {
     const payload: AuthPayload = { userId };
     return {
       access_token: this.jwtService.sign(payload),
