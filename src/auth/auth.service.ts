@@ -13,30 +13,34 @@ export class AuthService {
   ) {}
 
   async register(authUserDto: CreateUserDto) {
-    const { email, firstName, password } = authUserDto;
+    try {
+      const { email, firstName, password } = authUserDto;
 
-    // console.log({ hashPassword, password });
+      // console.log({ hashPassword, password });
 
-    const existingUser = await this.databaseService.user.findUnique({
-      where: {
-        email,
-      },
-    });
-    if (existingUser) {
-      throw new Error('This User already have Account');
-      return;
+      const existingUser = await this.databaseService.user.findUnique({
+        where: {
+          email,
+        },
+      });
+      if (existingUser) {
+        throw new Error('This User already have Account');
+        return;
+      }
+      const hashPassword = await this.hashPassword(password);
+
+      const createdUser = await this.databaseService.user.create({
+        data: {
+          email,
+          firstName,
+          password: hashPassword,
+        },
+      });
+
+      return await this.getAuthenticateUser({ userId: createdUser.id });
+    } catch (error) {
+      return { error: true, message: error.message };
     }
-    const hashPassword = await this.hashPassword(password);
-
-    const createdUser = await this.databaseService.user.create({
-      data: {
-        email,
-        firstName,
-        password: hashPassword,
-      },
-    });
-
-    return await this.getAuthenticateUser({ userId: createdUser.id });
   }
 
   async login(authUserDto: LoginDto) {
@@ -55,7 +59,10 @@ export class AuthService {
       return;
     }
 
-    const ispasswordCorrect = await compare(password, existingUser.password);
+    const ispasswordCorrect = await this.isPasswordValid({
+      password,
+      hashedPassword: existingUser.password,
+    });
 
     if (!ispasswordCorrect) {
       throw new Error('Invalid password');
@@ -69,7 +76,13 @@ export class AuthService {
     return hashedPassword;
   }
 
-  private async isPasswordValid(password: string, hashedPassword: string) {
+  private async isPasswordValid({
+    password,
+    hashedPassword,
+  }: {
+    password: string;
+    hashedPassword: string;
+  }) {
     const isPasswordValid = await compare(password, hashedPassword);
     return isPasswordValid;
   }

@@ -27,8 +27,6 @@ export class AuthController {
 
   @Post('login')
   async login(@Body(ValidationPipe) authUserDto: LoginDto) {
-    console.log(authUserDto);
-
     return await this.authService.login(authUserDto);
   }
 
