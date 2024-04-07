@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Post,
+  Query,
   Request,
   UseGuards,
   ValidationPipe,
@@ -12,6 +13,7 @@ import { JwtAuthGuard } from 'src/guard/jwt-auth-guard';
 import { UserService } from 'src/user/user.service';
 import { AuthService } from './auth.service';
 import { CreateUserDto, LoginDto } from './dto/auth.dto';
+import { ResetUserPasswordDto } from './dto/reset-user-password.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -28,6 +30,21 @@ export class AuthController {
   @Post('login')
   async login(@Body(ValidationPipe) authUserDto: LoginDto) {
     return await this.authService.login(authUserDto);
+  }
+
+  @Post('reset-password')
+  async resetPassword(@Body('email') email: string) {
+    return this.authService.resetPassword({ email });
+  }
+
+  @Get('verify-reset-password-token')
+  async verifyResetPassword(@Query('token') token: string) {
+    return this.authService.verifyResetPassword({ token });
+  }
+
+  @Post('update-password')
+  async updatePassword(@Body() resetUserPassword: ResetUserPasswordDto) {
+    return this.authService.updatePassword(resetUserPassword);
   }
 
   @UseGuards(JwtAuthGuard)
