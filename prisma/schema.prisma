@@ -29,6 +29,11 @@ model User {
 
   conversations Conversation[]
   sentMessages ChatMessage[]
+  stripeAccountId String? @unique
+  stripeProductId String? @unique
+
+  givenDonations Donation[] @relation("givingUser")
+  receivedDonations Donation[] @relation("receivingUser")
 }
 
 model Conversation {
@@ -51,4 +56,21 @@ model ChatMessage {
   @@index([chatId])
   @@index([senderId])
 
+}
+
+model Donation {
+  id String @id @default(cuid())
+  createdAt DateTime @default(now())
+  stripeProductId String 
+  stripePriceId String @unique
+  amount Int?
+
+  givingUser User @relation("givingUser", fields: [givingUserId], references: [id])
+  givingUserId String
+
+  receivingUser User @relation("receivingUser", fields: [receivingUserId], references: [id])
+  receivingUserId String
+
+  @@index([givingUserId])
+  @@index([receivingUserId])
 }
